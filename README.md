@@ -27,6 +27,18 @@ The first request for a new trip takes a few seconds because the geocoding and r
 
 
 
+## Roadmap
+
+- [x] Add `FuelStation` and `CachedRoute` models and migrations
+- [x] Register models in the Django admin
+- [x] Implement external API calls and refuel stations optimizer
+- [x] Add tests for the refuel stops optimized service layer
+- [ ] Gracefully handle the network timeout errors when calling OSRM or Nominatim APIs in the main endpoint call result.
+
+---
+
+
+
 ## Stack
 
 
@@ -222,18 +234,6 @@ Never commit `.env`. Only `.env.example` is tracked.
 | GET    | `/api/stats`             | Reports how many fuel stations are in the DB, and how many of them have been geocoded so far |
 | GET    | `/api/debug/cache-stats` | Exposes the in-process counters from external API services                                   |
 
-
----
-
-
-
-## Roadmap
-
-- [x] Add `FuelStation` and `CachedRoute` models and migrations
-- [x] Register models in the Django admin
-- [x] Implement external API calls and refuel stations optimizer
-- [x] Add tests for the refuel stops optimized service layer
-- [ ] Gracefully handle the network timeout errors when calling OSRM or Nominatim APIs in the main endpoint call result.
 
 ---
 
