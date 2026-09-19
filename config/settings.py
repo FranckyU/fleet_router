@@ -86,5 +86,21 @@ REST_FRAMEWORK = {
 }
 
 # External API config (to be filled in once the API is known)
-EXTERNAL_API_BASE_URL = os.getenv("EXTERNAL_API_BASE_URL", "")
-EXTERNAL_API_TIMEOUT = int(os.getenv("EXTERNAL_API_TIMEOUT", "10"))
+# EXTERNAL_API_BASE_URL = os.getenv("EXTERNAL_API_BASE_URL", "")
+# EXTERNAL_API_TIMEOUT = int(os.getenv("EXTERNAL_API_TIMEOUT", "10"))
+
+# ---- fleet_router domain settings ----
+FUEL_CSV_PATH     = DATA_DIR / "fuel-prices-for-be-assessment.csv"
+
+MILES_TO_KM       = 1.609344
+MAX_RANGE_MILES   = 500.0
+MAX_RANGE_KM      = MAX_RANGE_MILES * MILES_TO_KM       # 804.672
+MPG               = 10.0
+SAFETY_MARGIN     = 0.90
+STATION_RADIUS_KM = 8.0                                 # ~5 mi
+SAMPLE_STEP_KM    = 8.0                                 # ~5 mi
+WIDENING_RADII_KM = (8.0, 24.0, 48.0, 96.0)             # ~5, 15, 30, 60 mi
+PRICE_TRIM_FACTOR = 1.25                                # keep ≤ 1.25×cheapest
+MAX_SEGMENTS      = 30                                  # safety guard
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
