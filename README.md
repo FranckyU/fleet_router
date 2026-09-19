@@ -1,6 +1,6 @@
 # Fleet Router
 
-A small Django/DRF service that acts as a **fleet fueling optimizer**: it exposes a REST API, and  will call an external raw map and routing API, processes the response to find optimal fuel stops rom known gas stations (optmizes by max range and fuel price), then returns the optimized refueling map to the caller.
+A small Django/DRF service that acts as a **fleet fueling optimizer**: it exposes a REST API, and  will call an external raw map and routing API, processes the response to find optimal fuel stops from known gas stations (optmizes by max range and fuel price), then returns the optimized route and refueling stops map to the caller.
 
 ## How it works
 
