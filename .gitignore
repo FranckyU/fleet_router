@@ -19,12 +19,10 @@ ENV/
 # --- Django ---
 *.log
 local_settings.py
-db.sqlite3
-db.sqlite3-journal
-db.sqlite3-wal
-db.sqlite3-shm
-!/data/
-!/data/fuel-prices-for-be-assessment.csv
+/data/db.sqlite3
+/data/db.sqlite3-journal
+/data/db.sqlite3-wal
+/data/db.sqlite3-shm
 /staticfiles/
 /media/
 /api/migrations/*.py
