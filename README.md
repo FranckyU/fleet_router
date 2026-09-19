@@ -259,4 +259,11 @@ The app is then available at [http://localhost:8000/](http://localhost:8000/).
 
 ## Tests
 
-Run the tests with `docker compose exec web python -m pytest`
+The test coverage includes 2 scenarios:
+
+- Scenario 1 — short trip, under range, no refueling stops, zero cost.
+- Scenario 2 — long trip, over range, requires refueling stops.
+
+No network calls are made during the tests. Sandboxing and factory fixtures, mocks and stubs are used instead.
+
+Run those tests with `docker compose exec web python -m pytest`
