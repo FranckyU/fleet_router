@@ -91,6 +91,7 @@ REST_FRAMEWORK = {
 
 # ---- fleet_router domain settings ----
 FUEL_CSV_PATH     = DATA_DIR / "fuel-prices-for-be-assessment.csv"
+US_CITIES_CSV_PATH     = DATA_DIR / "uscities.csv"
 
 MILES_TO_KM       = 1.609344
 MAX_RANGE_MILES   = 500.0
