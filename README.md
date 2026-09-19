@@ -1,8 +1,6 @@
 # Fleet Router
 
-A small Django REST Framework service that acts as a **bridge**: it exposes a REST
-API, and (later) will call an external API, process the response, and return
-normalized JSON to the caller.
+A small Django/DRF service that acts as a **fleet fueling optimizer**: it exposes a REST API, and  will call an external raw map and routing API, processes the response to find optimal fuel stops rom known gas stations (optmizes by max range and fuel price), then returns the refueling map to the caller.
 
 The app is intentionally minimal right now — it exposes a health check and a
 placeholder endpoint that returns dummy JSON. The external API integration and
