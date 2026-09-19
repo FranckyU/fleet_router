@@ -256,3 +256,7 @@ python manage.py runserver
 ```
 
 The app is then available at [http://localhost:8000/](http://localhost:8000/).
+
+## Tests
+
+Run the tests with `docker compose exec web python -m pytest`
