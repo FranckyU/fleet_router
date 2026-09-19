@@ -1,10 +1,31 @@
 # Fleet Router
 
-A small Django/DRF service that acts as a **fleet fueling optimizer**: it exposes a REST API, and  will call an external raw map and routing API, processes the response to find optimal fuel stops rom known gas stations (optmizes by max range and fuel price), then returns the refueling map to the caller.
+A small Django/DRF service that acts as a **fleet fueling optimizer**: it exposes a REST API, and  will call an external raw map and routing API, processes the response to find optimal fuel stops rom known gas stations (optmizes by max range and fuel price), then returns the optimized refueling map to the caller.
 
-The app is intentionally minimal right now — it exposes a health check and a
-placeholder endpoint that returns dummy JSON. The external API integration and
-data persistence will be added once the target API is known.
+## How it works
+
+1. On start, the fuel stations CSV data is loaded into the database, and each station gets the coordinate of the city it belongs to using another US cities CSV
+
+2. **You call the endpoint** with a start and finish location:
+   `GET /api/route_map/?start=Chicago,%20IL&finish=Denver,%20CO`
+
+3. **The API checks its cache.** If this exact trip was planned before, it returns the stored answer immediately.
+
+4. **It converts both locations into coordinates** using a geocoding service (Nominatim), turning "Chicago, IL" into a latitude/longitude pair.
+
+5. **It asks OSRM for the driving route** — the full path of the trip as a list of coordinates, plus which highways the route uses.
+
+6. **It narrows down the fuel stations.** Out of ~1,600 stations in the CSV, it keeps only the ones in states the route passes through and whose address mentions a highway on the route. It then drops the most expensive ones.
+
+7. **It walks the route and picks fuel stops.** Starting from the beginning, it tracks how far the car has driven. When the remaining distance exceeds 500 miles (with a 10% safety buffer), it looks for the cheapest station near the furthest point it can still reach, and marks it as a stop. It repeats this until the destination fits within one tank.
+
+8. **It calculates the total cost.** Each leg of the trip is charged at the price of the station the car refueled at before that leg, divided by 10 miles per gallon.
+
+9. **It returns the answer**: the route coordinates to draw on a map, the list of fuel stops with their names, prices, and distances, plus the total miles and total fuel cost.
+
+The first request for a new trip takes 15–25 seconds because the geocoding service is rate-limited to one call per second and needs to look up each new fuel station. Every repeat request is instant, and any new trip that passes near stations already looked up reuses those coordinates for free.
+
+
 
 ---
 
@@ -21,38 +42,6 @@ data persistence will be added once the target API is known.
 | Database         | SQLite (volume-backed)     |
 | Containerization | Docker + Docker Compose    |
 
-
----
-
-
-
-## Project layout
-
-```
-fleet_router/
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── .env.example
-├── .dockerignore
-├── .gitignore
-├── manage.py
-├── config/                    # Django project package (settings, urls, wsgi)
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-└── api/              # Django app (views, services, models, admin)
-    ├── __init__.py
-    ├── apps.py
-    ├── admin.py
-    ├── models.py
-    ├── services.py
-    ├── views.py
-    ├── urls.py
-    └── migrations/
-        └── __init__.py
-```
 
 ---
 
@@ -104,10 +93,11 @@ docker compose up --build -d
 
 On startup the container automatically:
 
-1. Runs `python manage.py migrate` — creates the SQLite database and all
+1. Runs `python manage.py migrate` - creates the SQLite database and all
   built-in Django tables (auth, sessions, admin, content types).
-2. Runs `python manage.py collectstatic` — gathers admin static assets.
-3. Starts Gunicorn on port `8000`.
+2. Runs `python manage.py collectstatic` - gathers admin static assets.
+3. Runs `python manage.py load_fuel_stations_csv` - import the known fueling stations from the /data/fuel-prices-for-be-assessment.csv file
+4. Starts Gunicorn on port `8000`.
 
 Check that it came up:
 
@@ -128,11 +118,11 @@ curl http://localhost:8000/api/health/
 # -> {"status": "ok"}
 
 # Placeholder bridge endpoint (dummy JSON for now)
-curl http://localhost:8000/api/route_map/
-# -> {"message": "route map endpoint is alive", "source": "dummy", "items": [...]}
+curl http://localhost:8000/api/route_map/?start=Chicago,%20IL&finish=Detroit,%20MI
+# -> {"start":{"query":"Chicago, IL","lat":41.8755616,"lon":-87.6244212},"finish":{"query":"Detroit, MI","lat":42.3315509,"lon":-83.0466403},"route":[[41.875563,-87.624351],[41.875314,-87.624346],[41.875125,-87.624342],[41.874667,-87.624334],[41.874574,-87.624331],[41.874452,-87.624328],[41.874447,-87.624449],[41.874447,-87.624484],[41.874428,-87.625165],[41.874427,-87.625224],[41.874422,-87.625509],[41.874418,-87.625846],[41.874414,-87.625988],[41.87441,-87.626166],[41.874406] ...}
 ```
 
-You can also open the DRF browsable API in a browser: [http://localhost:8000/api/route_map/](http://localhost:8000/api/bridge/)
+You can also open the DRF browsable API in a browser: [http://localhost:8000/api/route_map/](http://localhost:8000/api/bridge/)  or use Postman API client.
 
 ---
 
@@ -155,7 +145,7 @@ yet — that will change as models are added.
 
 
 
-## Common commands
+## Common development commands
 
 All management commands are run inside the running container:
 
@@ -197,7 +187,7 @@ named Docker volume `sqlite_data`. This means:
 - The database survives `docker compose down` and `docker compose up`.
 - The database is **deleted** by `docker compose down -v` (the `-v` removes
 volumes).
-- The local `./data/` folder is intentionally git-ignored.
+- The local `./data/db.sqlite3` file is intentionally git-ignored.
 
 ---
 
@@ -231,10 +221,9 @@ Never commit `.env`. Only `.env.example` is tracked.
 | GET    | `/api/health/`    | Liveness probe — returns `{"status": "ok"}` |
 | GET    | `/api/route_map/` | Placeholder endpoint returning dummy JSON   |
 | GET    | `/admin/`         | Django admin UI                             |
+| GET    | `/api/stats`      | Reports how many fuel stations are in the DB, and how many of them have been geocoded so far |
+| GET    | `/api/debug/cache-stats` | Exposes the in-process counters from external API services |
 
-
-The `/api/bridge/` endpoint is where the external API call and data
-processing will live once the target API is selected.
 
 ---
 
@@ -242,12 +231,11 @@ processing will live once the target API is selected.
 
 ## Roadmap
 
-- [ ] Add `ProcessedItem` model and migrations
-- [ ] Implement external API call inside `/api/bridge/`
-- [ ] Register models in the Django admin
-- [ ] Add request/response serializers
-- [ ] Add auth (token or session) if the API becomes private
-- [ ] Add tests for the service layer and endpoints
+- [x] Add `FuelStation` and `CachedRoute` models and migrations
+- [x] Register models in the Django admin
+- [x] Implement external API calls and refuel stations optimizer
+- [ ] Add tests for the refuel stops optimized service layer
+- [ ] Gracefully handle the network timeout errors when calling OSRM or Nominatim APIs in the main endpoint call result.
 
 ---
 
