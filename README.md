@@ -5,29 +5,27 @@ A small Django/DRF service that acts as a **fleet fueling optimizer**: it expose
 ## How it works
 
 1. On start, the fuel stations CSV data is loaded into the database, and each station gets the coordinate of the city it belongs to using another US cities CSV
-
 2. **You call the endpoint** with a start and finish location:
-   `GET /api/route_map/?start=Chicago,%20IL&finish=Denver,%20CO`
-
+  `GET /api/route_map/?start=Chicago,%20IL&finish=Denver,%20CO`
 3. **The API checks its cache.** If this exact trip was planned before, it returns the stored answer immediately.
-
 4. **It converts both locations into coordinates** using a geocoding service (Nominatim), turning "Chicago, IL" into a latitude/longitude pair.
-
 5. **It asks OSRM for the driving route** — the full path of the trip as a list of coordinates, plus which highways the route uses.
-
 6. **It narrows down the fuel stations.** Out of ~1,600 stations in the CSV, it keeps only the ones in states the route passes through and whose address mentions a highway on the route. It then drops the most expensive ones.
-
 7. **It walks the route and picks fuel stops.** Starting from the beginning, it tracks how far the car has driven. When the remaining distance exceeds 500 miles (with a 10% safety buffer), it looks for the cheapest station near the furthest point it can still reach, and marks it as a stop. It repeats this until the destination fits within one tank.
-
 8. **It calculates the total cost.** Each leg of the trip is charged at the price of the station the car refueled at before that leg, divided by 10 miles per gallon.
-
 9. **It returns the answer**: the route coordinates to draw on a map, the list of fuel stops with their names, prices, and distances, plus the total miles and total fuel cost.
 
-The first request for a new trip takes 15–25 seconds because the geocoding service is rate-limited to one call per second and needs to look up each new fuel station. Every repeat request is instant, and any new trip that passes near stations already looked up reuses those coordinates for free.
-
-
+The first request for a new trip takes 15–25 seconds because the geocoding service is rate-limited to one call per second and needs to look up each new fuel station. Every repeat request is instant, and any new trip that passes near stations already looked up reuses those coordinates for free.  
+  
+### Initial assumptions and design choices
+  
+- We assume that the truck/car is fully loaded on fuel at start.
+- Each fuel station gets the centroid coordinates of the city it belongs to.
+- All internal calculations are in metrics units, the MPG and MAX RANGE are in miles for user reference, and they are internally converted to meters/km.
 
 ---
+
+
 
 ## Stack
 
@@ -216,13 +214,13 @@ Never commit `.env`. Only `.env.example` is tracked.
 ## API endpoints
 
 
-| Method | Path              | Description                                 |
-| ------ | ----------------- | ------------------------------------------- |
-| GET    | `/api/health/`    | Liveness probe — returns `{"status": "ok"}` |
-| GET    | `/api/route_map/` | Placeholder endpoint returning dummy JSON   |
-| GET    | `/admin/`         | Django admin UI                             |
-| GET    | `/api/stats`      | Reports how many fuel stations are in the DB, and how many of them have been geocoded so far |
-| GET    | `/api/debug/cache-stats` | Exposes the in-process counters from external API services |
+| Method | Path                     | Description                                                                                  |
+| ------ | ------------------------ | -------------------------------------------------------------------------------------------- |
+| GET    | `/api/health/`           | Liveness probe — returns `{"status": "ok"}`                                                  |
+| GET    | `/api/route_map/`        | Placeholder endpoint returning dummy JSON                                                    |
+| GET    | `/admin/`                | Django admin UI                                                                              |
+| GET    | `/api/stats`             | Reports how many fuel stations are in the DB, and how many of them have been geocoded so far |
+| GET    | `/api/debug/cache-stats` | Exposes the in-process counters from external API services                                   |
 
 
 ---
