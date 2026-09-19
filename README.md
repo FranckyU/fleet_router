@@ -17,12 +17,12 @@ A small Django/DRF service that acts as a **fleet fueling optimizer**: it expose
 
 The first request for a new trip takes a few seconds because the geocoding and routing services are rate-limited to one call per second. Every repeat request is instant, and any new trip that passes near stations already looked up reuses those coordinates for free, and previously computed routes are cached as well.     
 
-
 ### Initial assumptions and design choices
 
 - We assume that the truck/car is fully loaded on fuel at start.
 - Each fuel station gets the centroid coordinates of the city it belongs to.
 - All internal calculations are in metrics units, the MPG and MAX RANGE are in miles for user reference, and they are internally converted to meters/km.
+
 
 
 ### Roadmap
@@ -39,6 +39,8 @@ The first request for a new trip takes a few seconds because the geocoding and r
 
 ## The Project
 
+
+
 ### Prerequisites
 
 - Docker Engine 24+ and Docker Compose v2 (`docker compose`, not `docker-compose`)
@@ -54,6 +56,8 @@ docker compose version
 
 
 ### Stack
+
+
 | Layer            | Choice                     |
 | ---------------- | -------------------------- |
 | Language         | Python 3.14                |
@@ -66,6 +70,7 @@ docker compose version
 
 
 
+
 ### Persistence
 
 SQLite lives at `/app/data/db.sqlite3` inside the container, backed by the
@@ -75,7 +80,6 @@ named Docker volume `sqlite_data`. This means:
 - The database is **deleted** by `docker compose down -v` (the `-v` removes
 volumes).
 - The local `./data/db.sqlite3` file is intentionally git-ignored.
-
 
 
 
@@ -140,6 +144,8 @@ docker compose ps
 docker compose logs -f web
 ```
 
+
+
 ### Alt. Running without Docker (optional)
 
 If you have Python 3.14 locally:
@@ -164,6 +170,8 @@ The app is then available at [http://localhost:8000/](http://localhost:8000/).
 
 ## Verifying it works
 
+
+
 ### API endpoints check
 
 ```bash
@@ -180,6 +188,8 @@ You can also open the DRF browsable API in a browser: [http://localhost:8000/api
 
 
 
+
+
 ### Django admin
 
 The admin is enabled at [http://localhost:8000/admin/](http://localhost:8000/admin/).
@@ -190,8 +200,10 @@ Create a superuser (one time):
 docker compose exec web python manage.py createsuperuser
 ```
 
-Log in with the credentials you just set. Nothing is registered in the admin
-yet — that will change as models are added.
+Log in with the credentials you just set.
+
+
+
 
 
 ### Common dev commands
@@ -241,6 +253,7 @@ docker compose down -v
 
 
 ---
+
 
 
 ## Tests
