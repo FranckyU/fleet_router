@@ -20,7 +20,7 @@ The first request for a new trip takes a few seconds because the geocoding and r
 ### Initial assumptions and design choices
 
 - We optimize the refueling stops and refueling cost. So We assume that the truck/car is loaded on fuel at start, for the first leg.
-- Each fuel station gets the centroid coordinates of the city it belongs to.
+- Each fuel station gets the centroid coordinates of the city it belongs to. We reserve a fixed  safety margin distance to take the detours into account.
 - All internal calculations are in metrics units, the MPG and MAX RANGE are in miles for user reference, and they are internally converted to meters/km.
 
 
