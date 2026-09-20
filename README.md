@@ -30,7 +30,7 @@ The first request for a new trip takes a few seconds because the geocoding and r
 - [x] Add `FuelStation` and `CachedRoute` models and migrations
 - [x] Register models in the Django admin
 - [x] Implement external API calls and refuel stations optimizer
-- [x] Add tests for the refuel stops optimized service layer
+- [x] Add tests for the refuel stops optimizer service layer
 - [ ] Gracefully handle the network timeout errors when calling OSRM or Nominatim APIs in the main endpoint call result.
 
 ---
