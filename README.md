@@ -245,11 +245,11 @@ docker compose down -v
 
 | Method | Path                     | Description                                                                                  |
 | ------ | ------------------------ | -------------------------------------------------------------------------------------------- |
-| GET    | `/api/health/`           | Liveness probe — returns `{"status": "ok"}`                                                  |
-| GET    | `/api/route_map/`        | Placeholder endpoint returning dummy JSON                                                    |
-| GET    | `/admin/`                | Django admin UI                                                                              |
-| GET    | `/api/stats`             | Reports how many fuel stations are in the DB, and how many of them have been geocoded so far |
-| GET    | `/api/debug/cache-stats` | Exposes the in-process counters from external API services                                   |
+| GET    | `/api/health/`           | Liveness probe — returns a JSON `{"status": "ok"}`                                           |
+| GET    | `/api/route_map/`        | The main endpoint for refuel stops optimization (JSON)                                       |
+| GET    | `/admin/`                | Django admin UI (HTML)                                                                       |
+| GET    | `/api/stats`             | Reports how many fuel stations are in the DB, and how many of them have been geocoded so far (JSON) |
+| GET    | `/api/debug/cache-stats` | Exposes the in-process counters from external API services (JSON)                            |
 
 
 ---
