@@ -12,7 +12,7 @@ A small Django/DRF service that acts as a **fleet fueling optimizer**: it expose
 5. **It asks OSRM for the driving route** — the full path of the trip as a list of coordinates, plus which highways the route uses.
 6. **It narrows down the fuel stations.** Out of 8K stations in the CSV, it keeps only the ones in states the route passes through.
 7. **It walks the route and picks fuel stops.** Starting from the beginning, it tracks how far the car has driven. When the remaining distance exceeds 500 miles (with a 10% safety buffer), it looks for the cheapest station near the furthest point it can still reach, and marks it as a stop. It repeats this until the destination fits within one tank.
-8. **It calculates the total cost.** Each leg of the trip is charged at the price of the station the car refueled at before that leg, divided by 10 miles per gallon.
+8. **It calculates the total cost.** Each leg of the trip is charged at the price per gallon of the station the car refueled at before that leg, using the reference MPG and the computed leg distance.
 9. **It returns the answer**: the route coordinates to draw on a map, the list of fuel stops with their names, prices, and distances, plus the total miles and total fuel cost.
 
 The first request for a new trip takes a few seconds because the geocoding and routing services are rate-limited to one call per second. Every repeat request is instant, and any new trip that passes near stations already looked up reuses those coordinates for free, and previously computed routes are cached as well.     
